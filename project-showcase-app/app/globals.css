@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  /* Vancouver Canucks Colors */
+  --canucks-navy: #00205b;
+  --canucks-blue: #0066cc;
+  --canucks-green: #00a651;
+  --canucks-light-blue: #47aae8;
+  --canucks-white: #ffffff;
+  --background: var(--canucks-white);
+  --foreground: var(--canucks-navy);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-canucks-navy: var(--canucks-navy);
+  --color-canucks-blue: var(--canucks-blue);
+  --color-canucks-green: var(--canucks-green);
+  --color-canucks-light-blue: var(--canucks-light-blue);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d1324;
+    --foreground: #ffffff;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Scroll Animation Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animation Classes */
+.scroll-animate {
+  opacity: 1;
+}
+
+/* Hover state for cards */
+.card-hover {
+  transition: all 0.3s ease-in-out;
+}
+
+.card-hover:hover {
+  transform: scale(1.02);
+  filter: drop-shadow(0 20px 25px rgba(34, 197, 94, 0.2));
+}
+
+/* Select dropdown styling */
+select {
+  color-scheme: dark;
+  accent-color: #47aae8;
+}
+
+select option {
+  background-color: #0d1324;
+  color: #ffffff;
+  padding: 4px;
+}
+
+select option:checked {
+  background: linear-gradient(#47aae8, #47aae8);
+  background-color: #47aae8;
+}

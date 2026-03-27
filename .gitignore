@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.env.local
+
+# Build outputs
+.next/
+out/
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.egg-info/
+venv/
+
+# Large ML models (>100MB, exceeds GitHub limit)
+ml_api/models/lgbm_model_updated.pkl
+
+# Misc
+tsconfig.tsbuildinfo
