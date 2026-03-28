@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import joblib
+from catboost import CatBoostClassifier
 import pandas as pd
 import os
 import torch
@@ -27,8 +27,14 @@ CORS(app)
 # Load the pre-trained model
 MODEL_DIR = 'models'
 
-model = joblib.load(os.path.join(MODEL_DIR, 'lgbm_model_updated.pkl'))
-label_encoders = joblib.load(os.path.join(MODEL_DIR, 'label_encoders.pkl'))
+model = CatBoostClassifier()
+model.load_model(os.path.join(MODEL_DIR, 'shot_quality_catboost.cbm'))
+# Feature order: ['timeSinceLastEvent', 'xCord', 'yCord', 'shotAngle', 'shotAnglePlusRebound',
+#   'shotAngleReboundRoyalRoad', 'shotDistance', 'shotType', 'shotRebound',
+#   'shotAnglePlusReboundSpeed', 'shotRush', 'speedFromLastEvent', 'lastEventxCord',
+#   'lastEventyCord', 'distanceFromLastEvent', 'lastEventShotAngle', 'lastEventShotDistance',
+#   'lastEventCategory', 'offWing', 'shooterLeftRight', 'playerPositionThatDidEvent',
+#   'shooterTimeOnIceSinceFaceoff', 'shootingTeamPlayerDiff']
 
 class HockeyNN(nn.Module):
     def __init__(self, input_size=5000, hidden_size1=32, num_classes=4):
@@ -163,12 +169,7 @@ def predict_topic():
 def predict():
     try:
         data = request.get_json()
-        
-        
-        for column, encoder in label_encoders.items():
-            if column in data:
-                data[column] = encoder.transform([data[column]])[0]
-                
+
         input_df = pd.DataFrame([data])
         
         prediction = model.predict(input_df)
@@ -191,13 +192,6 @@ def predict():
 def health():
     return jsonify({'status': 'API is running', 'success': True})
 
-@app.route('/valid-values', methods=['GET'])
-def valid_values():
-    """Return valid values for each categorical feature"""
-    valid_vals = {}
-    for column, encoder in label_encoders.items():
-        valid_vals[column] = encoder.classes_.tolist()
-    return jsonify(valid_vals)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
