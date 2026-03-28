@@ -18,6 +18,10 @@ Four areas of change to the hockey analytics project showcase:
 - Remove the label encoder loop from the `/predict` handler. CatBoost handles
   categorical features natively with raw strings; applying the old encoders would
   corrupt predictions.
+- After loading the model, inspect `model.feature_names_` to confirm the expected
+  column order. The prediction DataFrame **must** be constructed with columns in
+  the exact order the model was trained on, with categorical string columns as
+  `dtype=object`. This is a hard contract with the saved `.cbm` model.
 - The `/valid-values` endpoint can be removed — the frontend already hardcodes
   all dropdown options.
 - Add `catboost` to `requirements.txt`, remove `lightgbm`.
@@ -26,13 +30,20 @@ Four areas of change to the hockey analytics project showcase:
 Three new fields added to the incoming `/predict` JSON payload and passed
 directly into the prediction DataFrame:
 
-| Field | Type | Values |
+| Field | Type | Valid Values |
 |---|---|---|
 | `shooterLeftRight` | string | `"L"` or `"R"` |
 | `playerPositionThatDidEvent` | string | `"L"`, `"R"`, `"D"`, `"C"` |
-| `shooterTimeOnIceSinceFaceoff` | float | seconds (non-negative) |
+| `shooterTimeOnIceSinceFaceoff` | float | non-negative number (seconds) |
 
 No derived calculations are needed for these fields.
+
+### Backend Validation
+The `/predict` handler must validate all new fields and return HTTP 400 on
+failure (mirroring the implicit validation the old label encoder loop provided):
+- `shooterLeftRight` must be in `{"L", "R"}`
+- `playerPositionThatDidEvent` must be in `{"L", "R", "D", "C"}`
+- `shooterTimeOnIceSinceFaceoff` must be a number >= 0
 
 ---
 
@@ -59,9 +70,15 @@ existing fields and checkboxes:
   non-negative number.
 
 ### API URL
-Replace hardcoded `http://localhost:5000` with `process.env.NEXT_PUBLIC_API_URL`
-(with `|| 'http://localhost:5000'` fallback) on both the shot prediction and
-topic analysis pages.
+Replace hardcoded `http://localhost:5000` with
+`process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'` on both the shot
+prediction and topic analysis pages.
+
+**Important:** `NEXT_PUBLIC_*` variables are baked in at `next build` time, not
+at container runtime. The value must be supplied as a Docker build argument
+(`ARG NEXT_PUBLIC_API_URL`) passed via `--build-arg` during the builder stage.
+The docker-compose file must pass it as a build arg, not only as a runtime
+`environment:` entry.
 
 ---
 
@@ -94,33 +111,68 @@ topic analysis pages.
 
 ## 4. Deployment
 
+### Next.js Config
+Add `output: 'standalone'` to `next.config.ts`. This is required for the
+multi-stage Dockerfile to produce the `.next/standalone` directory.
+
 ### Dockerfiles
-**`ml_api/Dockerfile`:** Single-stage, `python:3.11-slim` base. Install requirements, copy source, expose 5000.
+**`ml_api/Dockerfile`:** Single-stage, `python:3.11-slim` base. Install
+requirements, copy source, expose 5000.
 
 **`project-showcase-app/Dockerfile`:** Two-stage.
-- Builder: `node:20-alpine`, runs `npm ci && npm run build`
-- Runner: `node:20-alpine`, copies `.next/standalone` output, exposes 3000.
+- Builder: `node:20-alpine`. Accept `ARG NEXT_PUBLIC_API_URL`. Run `npm ci && npm run build`.
+- Runner: `node:20-alpine`. Copy three items from the builder:
+  1. `.next/standalone` → working directory
+  2. `public/` → `./public` (Next.js standalone does NOT bundle public assets)
+  3. `.next/static` → `./.next/static` (static assets must be copied separately)
+  - Expose 3000.
+  - Entrypoint: `CMD ["node", "server.js"]` (standard for Next.js standalone output)
 
 ### docker-compose.yml (repo root)
-- Two services: `ml-api` and `showcase-app`
-- `showcase-app` sets `NEXT_PUBLIC_API_URL` from environment (default `http://localhost:5000`)
-- Shared bridge network
+Two services: `ml-api` and `showcase-app`. Both on a shared bridge network.
+
+`showcase-app` must pass `NEXT_PUBLIC_API_URL` as a **build argument**, not only
+a runtime environment variable. Example:
+```yaml
+build:
+  context: ./project-showcase-app
+  args:
+    NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+```
+
+Inside the Docker bridge network, the frontend container must reference the API
+by service name. The `NEXT_PUBLIC_API_URL` for production deploys must be set to
+`http://ml-api:5000` (or the public URL if traffic routes externally). The
+`localhost:5000` fallback is only appropriate for local non-Docker dev.
 
 ### Environment
-- `project-showcase-app/.env.example` documents `NEXT_PUBLIC_API_URL=http://localhost:5000`
+- `project-showcase-app/.env.example` documents:
+  - `NEXT_PUBLIC_API_URL=http://localhost:5000` (local dev)
+  - A comment noting that Docker deploys should set this to `http://ml-api:5000`
 
 ### GitHub Actions
 **`.github/workflows/deploy.yml`:** Triggers on push to `main`.
 - Runner: `self-hosted` (Proxmox VM)
-- Steps: checkout → `docker compose build` → `docker compose up -d`
-- No container registry needed — runner is the deployment host.
-- `DEPLOY_DIR` env var (set in repo secrets or runner environment) points to the repo location on the VM.
+- The workflow uses `actions/checkout` which checks out code into
+  `$GITHUB_WORKSPACE`. All `docker compose` commands run from that directory.
+- Steps:
+  1. `actions/checkout`
+  2. `docker compose build` with `NEXT_PUBLIC_API_URL` surfaced from the
+     `NEXT_PUBLIC_API_URL` GitHub Actions secret via an explicit `env:` block:
+     ```yaml
+     env:
+       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+     ```
+     GitHub Actions secrets are not automatically available as environment
+     variables — the `env:` mapping is required.
+  3. `docker compose up -d`
 
 ---
 
 ## Files Modified
 - `ml_api/app.py`
 - `ml_api/requirements.txt`
+- `project-showcase-app/next.config.ts` (add `output: 'standalone'`)
 - `project-showcase-app/app/shot-prediction/page.tsx`
 - `project-showcase-app/app/topic-analysis/page.tsx`
 - `project-showcase-app/app/utils/shotCalculations.ts`
