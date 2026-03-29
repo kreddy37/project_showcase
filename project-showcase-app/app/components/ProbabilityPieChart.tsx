@@ -57,7 +57,7 @@ export default function ProbabilityPieChart({ probability, title = 'Shot Outcome
         <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 text-white">
           <p className="font-semibold">{data.name}</p>
           <p className="text-sm text-gray-300">
-            {data.value.toFixed(2)}% ({(data.value / 100 * 1).toFixed(4)})
+            {data.value.toFixed(2)}%
           </p>
         </div>
       );
@@ -66,7 +66,7 @@ export default function ProbabilityPieChart({ probability, title = 'Shot Outcome
   };
 
   return (
-    <div className="w-full bg-white/5 border border-white/20 rounded-lg p-6">
+    <div className="w-full bg-white/5 border border-white/15 rounded-2xl p-6">
       <h3 className="text-white font-bold text-lg mb-6">{title}</h3>
 
       <ResponsiveContainer width="100%" height={400}>
