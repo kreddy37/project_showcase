@@ -1,0 +1,26 @@
+services:
+  ml-api:
+    build:
+      context: ./ml_api
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  showcase-app:
+    build:
+      context: ./project-showcase-app
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - ml-api
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
