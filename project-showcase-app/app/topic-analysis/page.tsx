@@ -205,9 +205,9 @@ export default function TopicAnalysisPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white/5 border border-dashed border-white/20 rounded-2xl p-6 h-64 flex items-center justify-center">
+              <div className="bg-white/5 border border-dashed border-white/15 rounded-2xl p-6 h-64 flex items-center justify-center">
                 <div className="text-center">
-                  <p className="text-2xl mb-2 text-white/20">💬</p>
+                  <p className="text-2xl mb-2 text-white/40">💬</p>
                   <p className="text-gray-400 text-sm">
                     Enter text and analyze to see topic probabilities
                   </p>
