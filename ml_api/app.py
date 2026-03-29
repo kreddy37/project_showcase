@@ -169,6 +169,8 @@ def predict_topic():
 def predict():
     try:
         data = request.get_json()
+        if data is None:
+            return jsonify({'error': 'Request body must be valid JSON', 'success': False}), 400
 
         # Validate new enum fields
         if data.get('shooterLeftRight') not in ('L', 'R'):
@@ -189,10 +191,16 @@ def predict():
         prediction = model.predict(input_df)
         prediction_proba = model.predict_proba(input_df)
 
-        label_mappings = {0: 'goal', 1: 'play stopped', 2: 'controlled rebound', 3: 'dangerous rebound'}
+        label_mappings = {
+            0: 'goal',
+            1: 'play stopped',
+            2: 'play continued in zone',
+            3: 'play continued outside zone',
+            4: 'generated rebound',
+        }
 
         return jsonify({
-            'prediction': label_mappings[int(prediction[0])],
+            'prediction': label_mappings[int(prediction[0][0])],
             'probability': {label_mappings[i]: prob for i, prob in enumerate(prediction_proba[0])},
             'success': True
         })
