@@ -12,7 +12,7 @@ services:
     build:
       context: ./project-showcase-app
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://ml-api:5000}
     ports:
       - "3000:3000"
     networks:
