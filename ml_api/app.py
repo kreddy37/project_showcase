@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import joblib
+from catboost import CatBoostClassifier
 import pandas as pd
 import os
 import torch
@@ -27,8 +27,14 @@ CORS(app)
 # Load the pre-trained model
 MODEL_DIR = 'models'
 
-model = joblib.load(os.path.join(MODEL_DIR, 'lgbm_model_updated.pkl'))
-label_encoders = joblib.load(os.path.join(MODEL_DIR, 'label_encoders.pkl'))
+model = CatBoostClassifier()
+model.load_model(os.path.join(MODEL_DIR, 'shot_quality_catboost.cbm'))
+# Feature order: ['timeSinceLastEvent', 'xCord', 'yCord', 'shotAngle', 'shotAnglePlusRebound',
+#   'shotAngleReboundRoyalRoad', 'shotDistance', 'shotType', 'shotRebound',
+#   'shotAnglePlusReboundSpeed', 'shotRush', 'speedFromLastEvent', 'lastEventxCord',
+#   'lastEventyCord', 'distanceFromLastEvent', 'lastEventShotAngle', 'lastEventShotDistance',
+#   'lastEventCategory', 'offWing', 'shooterLeftRight', 'playerPositionThatDidEvent',
+#   'shooterTimeOnIceSinceFaceoff', 'shootingTeamPlayerDiff']
 
 class HockeyNN(nn.Module):
     def __init__(self, input_size=5000, hidden_size1=32, num_classes=4):
@@ -163,41 +169,48 @@ def predict_topic():
 def predict():
     try:
         data = request.get_json()
-        
-        
-        for column, encoder in label_encoders.items():
-            if column in data:
-                data[column] = encoder.transform([data[column]])[0]
-                
-        input_df = pd.DataFrame([data])
-        
+        if data is None:
+            return jsonify({'error': 'Request body must be valid JSON', 'success': False}), 400
+
+        # Validate new enum fields
+        if data.get('shooterLeftRight') not in ('L', 'R'):
+            return jsonify({'error': "shooterLeftRight must be 'L' or 'R'", 'success': False}), 400
+        if data.get('playerPositionThatDidEvent') not in ('L', 'R', 'D', 'C'):
+            return jsonify({'error': "playerPositionThatDidEvent must be one of L, R, D, C", 'success': False}), 400
+        toe = data.get('shooterTimeOnIceSinceFaceoff')
+        if toe is None or not isinstance(toe, (int, float)) or toe < 0:
+            return jsonify({'error': "shooterTimeOnIceSinceFaceoff must be a non-negative number", 'success': False}), 400
+
+        # Build DataFrame with exact column order the model was trained on.
+        # Cast categorical columns to object dtype as required by CatBoost.
+        cat_indices = model.get_cat_feature_indices()
+        cat_cols = [model.feature_names_[i] for i in cat_indices]
+        input_df = pd.DataFrame([data])[model.feature_names_]
+        input_df[cat_cols] = input_df[cat_cols].astype(object)
+
         prediction = model.predict(input_df)
         prediction_proba = model.predict_proba(input_df)
-        
-        label_mappings = {0: 'goal', 1: 'play stopped', 2: 'controlled rebound', 3: 'dangerous rebound'}
-        
+
+        label_mappings = {
+            0: 'goal',
+            1: 'play stopped',
+            2: 'play continued in zone',
+            3: 'play continued outside zone',
+            4: 'generated rebound',
+        }
+
         return jsonify({
-            'prediction': label_mappings[int(prediction[0])],
+            'prediction': label_mappings[int(prediction[0][0])],
             'probability': {label_mappings[i]: prob for i, prob in enumerate(prediction_proba[0])},
             'success': True
         })
     except Exception as e:
-        return jsonify({
-            'error': str(e),
-            'success': False
-        }), 400
+        return jsonify({'error': str(e), 'success': False}), 400
         
 @app.route('/', methods=['GET'])
 def health():
     return jsonify({'status': 'API is running', 'success': True})
 
-@app.route('/valid-values', methods=['GET'])
-def valid_values():
-    """Return valid values for each categorical feature"""
-    valid_vals = {}
-    for column, encoder in label_encoders.items():
-        valid_vals[column] = encoder.classes_.tolist()
-    return jsonify(valid_vals)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)

@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import Navigation from '@/app/components/shared/Navigation';
 import {
   calculateAngle,
   calculateDistance,
@@ -26,6 +26,9 @@ interface ShotFormData {
   shotRush: boolean;
   offWing: boolean;
   shootingTeamPlayerDiff: number | '';
+  shooterLeftRight: string;
+  playerPositionThatDidEvent: string;
+  shooterTimeOnIceSinceFaceoff: number | '';
 }
 
 interface PredictionResponse {
@@ -53,6 +56,9 @@ export default function ShotPredictionPage() {
     shotRush: false,
     offWing: false,
     shootingTeamPlayerDiff: '',
+    shooterLeftRight: 'R',
+    playerPositionThatDidEvent: 'C',
+    shooterTimeOnIceSinceFaceoff: '',
   });
 
   // Hockey rink dimensions (approximate)
@@ -149,6 +155,12 @@ export default function ShotPredictionPage() {
         typeof formData.shootingTeamPlayerDiff === 'number'
           ? formData.shootingTeamPlayerDiff
           : 0,
+      shooterLeftRight: formData.shooterLeftRight,
+      playerPositionThatDidEvent: formData.playerPositionThatDidEvent,
+      shooterTimeOnIceSinceFaceoff:
+        typeof formData.shooterTimeOnIceSinceFaceoff === 'number'
+          ? formData.shooterTimeOnIceSinceFaceoff
+          : 0,
     };
 
     const validation = validateShotData(shotData);
@@ -161,11 +173,14 @@ export default function ShotPredictionPage() {
     setErrors([]);
     try {
       const payload = buildShotPayload(shotData);
-      const response = await fetch('http://localhost:5000/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/predict`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -182,26 +197,7 @@ export default function ShotPredictionPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #0d1324, #1a2550)' }}>
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-opacity-95 backdrop-blur-md border-b border-green-500/20" style={{ backgroundColor: '#00205b' }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-white flex items-center gap-2 hover:text-green-400 transition-all duration-300">
-            <span>🏒</span>
-            <span>Hockey Analytics</span>
-          </Link>
-          <div className="flex items-center gap-8">
-            <Link href="/home" className="text-white hover:text-green-400 transition-all duration-300 font-semibold">
-              Home
-            </Link>
-            <Link href="/shot-prediction" className="text-green-400 transition-all duration-300 font-semibold border-b-2 border-green-400">
-              Shot Prediction
-            </Link>
-            <Link href="/topic-analysis" className="text-white hover:text-green-400 transition-all duration-300 font-semibold">
-              Topic Analysis
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navigation activePage="shot-prediction" />
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-16">
@@ -216,7 +212,7 @@ export default function ShotPredictionPage() {
           <div className="grid lg:grid-cols-3 gap-8 w-full lg:max-w-fit">
             {/* Map Area */}
             <div className="lg:col-span-2 space-y-8">
-            <div className="bg-linear-to-b from-white/10 to-white/5 border-2 border-green-500/30 rounded-2xl p-8">
+            <div className="bg-linear-to-b from-white/10 to-white/5 border border-white/15 rounded-2xl p-8">
               {/* Draggable pins outside rink */}
               <div className="flex gap-4 mb-4">
                 {pins.map((pin, index) => {
@@ -247,7 +243,7 @@ export default function ShotPredictionPage() {
                 onMouseMove={handleRinkMouseMove}
                 onMouseUp={handleRinkMouseUp}
                 onMouseLeave={handleRinkMouseUp}
-                className="relative w-full aspect-video bg-white rounded-lg border-4 border-dashed border-white/30 cursor-crosshair hover:border-white/50 transition-colors overflow-hidden"
+                className="relative w-full aspect-[200/85] bg-white rounded-lg border-4 border-dashed border-white/30 cursor-crosshair hover:border-white/50 transition-colors overflow-hidden"
               >
                 {/* Rink markings */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.8 }}>
@@ -324,7 +320,7 @@ export default function ShotPredictionPage() {
                 <div className="mt-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     {pins.map((pin, index) => (
-                      <div key={index} className="bg-white/10 border border-white/20 rounded-lg p-4">
+                      <div key={index} className="bg-white/10 border border-white/15 rounded-xl p-4">
                         <p className="text-white/60 text-sm mb-2 font-semibold">{pin.label}</p>
                         <p className="text-white font-mono text-sm">X: {pin.x.toFixed(1)}ft</p>
                         <p className="text-white font-mono text-sm">Y: {pin.y.toFixed(1)}ft</p>
@@ -333,28 +329,28 @@ export default function ShotPredictionPage() {
                   </div>
 
                   {arePinsOnRink && (
-                    <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 space-y-2">
+                    <div className="bg-green-900/20 border border-white/15 rounded-xl p-4 space-y-2">
                       <p className="text-green-400 font-semibold text-sm">Calculated Metrics</p>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="text-gray-300">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-xs text-gray-400">
                           Shot Distance:
                           <p className="text-green-400 font-mono">
                             {calculateDistanceToGoal(pins[1].x, pins[1].y).toFixed(2)}ft
                           </p>
                         </div>
-                        <div className="text-gray-300">
+                        <div className="text-xs text-gray-400">
                           Shot Angle:
                           <p className="text-green-400 font-mono">
                             {calculateAngle(pins[1].x, pins[1].y).toFixed(2)}°
                           </p>
                         </div>
-                        <div className="text-gray-300">
+                        <div className="text-xs text-gray-400">
                           Last Event Angle:
                           <p className="text-green-400 font-mono">
                             {calculateAngle(pins[0].x, pins[0].y).toFixed(2)}°
                           </p>
                         </div>
-                        <div className="text-gray-300">
+                        <div className="text-xs text-gray-400">
                           Event Distance:
                           <p className="text-green-400 font-mono">
                             {calculateDistance(pins[0].x, pins[0].y, pins[1].x, pins[1].y).toFixed(
@@ -365,7 +361,7 @@ export default function ShotPredictionPage() {
                       </div>
                       {typeof formData.timeSinceLastEvent === 'number' &&
                         formData.timeSinceLastEvent > 0 && (
-                          <div className="text-gray-300 pt-2 border-t border-white/10">
+                          <div className="text-xs text-gray-400 pt-2 border-t border-white/10">
                             Shot Speed:
                             <p className="text-green-400 font-mono">
                               {calculateSpeed(
@@ -383,7 +379,7 @@ export default function ShotPredictionPage() {
             </div>
 
             {/* Info Section */}
-            <div className="bg-white/5 border border-white/20 rounded-2xl p-8">
+            <div className="bg-white/5 border border-white/15 rounded-2xl p-8">
               <h3 className="text-2xl font-bold text-white mb-4">About This Model</h3>
               <div className="grid md:grid-cols-2 gap-8 text-gray-300">
                 <div>
@@ -406,7 +402,7 @@ export default function ShotPredictionPage() {
           <div className="flex flex-col gap-6">
             {/* Error Messages */}
             {errors.length > 0 && (
-              <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4">
+              <div className="bg-red-900/30 border border-red-500/50 rounded-xl p-4">
                 <p className="text-red-300 text-sm font-semibold mb-2">Errors:</p>
                 <ul className="text-red-200 text-sm space-y-1">
                   {errors.map((error, idx) => (
@@ -417,7 +413,7 @@ export default function ShotPredictionPage() {
             )}
 
             {/* Form Inputs */}
-            <div className="bg-white/5 border border-white/20 rounded-lg p-6 space-y-4">
+            <div className="bg-white/5 border border-white/15 rounded-2xl p-6 space-y-4">
               <h3 className="text-white font-bold text-lg">Shot Parameters</h3>
 
               {/* Time Inputs */}
@@ -436,7 +432,7 @@ export default function ShotPredictionPage() {
                       e.target.value === '' ? '' : parseFloat(e.target.value)
                     )
                   }
-                  className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
+                  className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
                   placeholder="e.g., 2.5"
                 />
               </div>
@@ -447,7 +443,7 @@ export default function ShotPredictionPage() {
                 <select
                   value={formData.shotType}
                   onChange={(e) => handleFormChange('shotType', e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white focus:outline-none focus:border-green-400"
+                  className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-green-400"
                   style={{
                     colorScheme: 'dark',
                   }}
@@ -468,7 +464,7 @@ export default function ShotPredictionPage() {
                 <select
                   value={formData.lastEventCategory}
                   onChange={(e) => handleFormChange('lastEventCategory', e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white focus:outline-none focus:border-green-400"
+                  className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-green-400"
                   style={{
                     colorScheme: 'dark',
                   }}
@@ -501,19 +497,75 @@ export default function ShotPredictionPage() {
                       e.target.value === '' ? '' : parseInt(e.target.value)
                     )
                   }
-                  className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
+                  className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
                   placeholder="e.g., 2 or -1"
                 />
               </div>
 
+              {/* Shooter Info */}
+              <div className="pt-4 border-t border-white/10 space-y-4">
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">Shooter Info</p>
+
+                {/* Shooter Handedness */}
+                <div className="space-y-2">
+                  <label className="text-gray-300 text-sm font-semibold">Shooter Handedness</label>
+                  <select
+                    value={formData.shooterLeftRight}
+                    onChange={(e) => handleFormChange('shooterLeftRight', e.target.value)}
+                    className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-green-400"
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value="L">Left</option>
+                    <option value="R">Right</option>
+                  </select>
+                </div>
+
+                {/* Position of Event Player */}
+                <div className="space-y-2">
+                  <label className="text-gray-300 text-sm font-semibold">Position of Event Player</label>
+                  <select
+                    value={formData.playerPositionThatDidEvent}
+                    onChange={(e) => handleFormChange('playerPositionThatDidEvent', e.target.value)}
+                    className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-green-400"
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value="C">Center</option>
+                    <option value="L">Left Wing</option>
+                    <option value="R">Right Wing</option>
+                    <option value="D">Defense</option>
+                  </select>
+                </div>
+
+                {/* Time on Ice Since Faceoff */}
+                <div className="space-y-2">
+                  <label className="text-gray-300 text-sm font-semibold">
+                    Time on Ice Since Faceoff (seconds)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.shooterTimeOnIceSinceFaceoff}
+                    onChange={(e) =>
+                      handleFormChange(
+                        'shooterTimeOnIceSinceFaceoff',
+                        e.target.value === '' ? '' : parseFloat(e.target.value)
+                      )
+                    }
+                    className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-green-400"
+                    placeholder="e.g., 45"
+                  />
+                </div>
+              </div>
+
               {/* Checkboxes */}
-              <div className="space-y-2 pt-2">
+              <div className="border-t border-white/10 pt-4 space-y-2">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.shotRebound}
                     onChange={(e) => handleFormChange('shotRebound', e.target.checked)}
-                    className="w-4 h-4 rounded"
+                    className="w-4 h-4 rounded accent-green-400"
                   />
                   <span className="text-gray-300 text-sm">Shot is a Rebound</span>
                 </label>
@@ -523,7 +575,7 @@ export default function ShotPredictionPage() {
                     type="checkbox"
                     checked={formData.shotRush}
                     onChange={(e) => handleFormChange('shotRush', e.target.checked)}
-                    className="w-4 h-4 rounded"
+                    className="w-4 h-4 rounded accent-green-400"
                   />
                   <span className="text-gray-300 text-sm">Shot from Rush</span>
                 </label>
@@ -533,7 +585,7 @@ export default function ShotPredictionPage() {
                     type="checkbox"
                     checked={formData.offWing}
                     onChange={(e) => handleFormChange('offWing', e.target.checked)}
-                    className="w-4 h-4 rounded"
+                    className="w-4 h-4 rounded accent-green-400"
                   />
                   <span className="text-gray-300 text-sm">Off-Wing Shot</span>
                 </label>
@@ -545,7 +597,7 @@ export default function ShotPredictionPage() {
               <button
                 onClick={handlePrediction}
                 disabled={!arePinsOnRink || loading}
-                className={`w-full py-3 px-4 rounded-lg font-bold transition-all duration-300 ${
+                className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 ${
                   arePinsOnRink && !loading
                     ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
                     : 'bg-gray-600 text-gray-300 cursor-not-allowed'
@@ -556,7 +608,7 @@ export default function ShotPredictionPage() {
 
               <button
                 onClick={handleClearPins}
-                className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-bold transition-all duration-300 border border-white/20"
+                className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all duration-300 border border-white/15"
               >
                 Clear Pins
               </button>
@@ -566,7 +618,7 @@ export default function ShotPredictionPage() {
             {prediction && (
               <>
                 <ProbabilityPieChart probability={prediction.probability} />
-                <div className="mt-4 bg-white/5 border border-white/20 rounded-lg p-4">
+                <div className="mt-4 bg-white/5 border border-white/15 rounded-xl p-4">
                   <p className="text-white text-sm font-semibold mb-2">Most Likely Outcome</p>
                   <p className="text-green-400 text-2xl font-bold capitalize">
                     {prediction.prediction}
@@ -575,14 +627,6 @@ export default function ShotPredictionPage() {
               </>
             )}
 
-            {/* Status */}
-            <div className="text-gray-400 text-sm text-center">
-              <p>{pins.filter(p => p.x >= -100 && p.x <= 100).length}/2 pins on rink</p>
-              {!arePinsOnRink && <p className="text-white/40 mt-2">Drag pins onto the rink</p>}
-              {arePinsOnRink && (
-                <p className="text-green-400/60 mt-2">Fill the form and predict</p>
-              )}
-            </div>
           </div>
           </div>
         </div>

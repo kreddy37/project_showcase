@@ -29,3 +29,4 @@ ml_api/models/lgbm_model_updated.pkl
 
 # Misc
 tsconfig.tsbuildinfo
+.worktrees/

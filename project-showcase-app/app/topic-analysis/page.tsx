@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import Navigation from '@/app/components/shared/Navigation';
 import ProbabilityPieChart from '@/app/components/ProbabilityPieChart';
 
 interface PredictionResponse {
@@ -29,11 +29,14 @@ export default function TopicAnalysisPage() {
     setResults(null);
 
     try {
-      const response = await fetch('http://localhost:5000/predict-topic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/predict-topic`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -73,26 +76,7 @@ export default function TopicAnalysisPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #0d1324, #1a2550)' }}>
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-opacity-95 backdrop-blur-md border-b border-green-500/20" style={{ backgroundColor: '#00205b' }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-white flex items-center gap-2 hover:text-green-400 transition-all duration-300">
-            <span>🏒</span>
-            <span>Hockey Analytics</span>
-          </Link>
-          <div className="flex items-center gap-8">
-            <Link href="/home" className="text-white hover:text-green-400 transition-all duration-300 font-semibold">
-              Home
-            </Link>
-            <Link href="/shot-prediction" className="text-white hover:text-green-400 transition-all duration-300 font-semibold">
-              Shot Prediction
-            </Link>
-            <Link href="/topic-analysis" className="text-green-400 transition-all duration-300 font-semibold border-b-2 border-green-400">
-              Topic Analysis
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navigation activePage="topic-analysis" />
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-16">
@@ -107,7 +91,7 @@ export default function TopicAnalysisPage() {
           <div className="grid lg:grid-cols-3 gap-8 w-full lg:max-w-fit">
             {/* Input Area */}
             <div className="lg:col-span-2 space-y-8">
-              <div className="bg-linear-to-b from-white/10 to-white/5 border-2 border-blue-500/30 rounded-2xl p-8">
+              <div className="bg-linear-to-b from-white/10 to-white/5 border border-white/15 rounded-2xl p-8">
                 {/* Text Input */}
                 <div className="mb-6">
                   <label htmlFor="text-input" className="block text-white font-semibold mb-3 text-lg">
@@ -169,16 +153,19 @@ export default function TopicAnalysisPage() {
                     <button
                       key={index}
                       onClick={() => handleLoadExample(example)}
-                      className="text-left p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-blue-500/50 transition-all duration-300 text-gray-300 hover:text-white text-sm"
+                      className="text-left p-4 bg-white/5 border border-white/15 rounded-xl hover:bg-white/10 hover:border-blue-500/50 transition-all duration-300 text-gray-300 hover:text-white text-sm flex gap-3 items-start"
                     >
-                      {example}
+                      <span className="font-mono text-xs text-white/30 shrink-0 pt-0.5">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span>{example}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Info Section */}
-              <div className="bg-white/5 border border-white/20 rounded-2xl p-8">
+              <div className="bg-white/5 border border-white/15 rounded-2xl p-8">
                 <h3 className="text-2xl font-bold text-white mb-4">About This Model</h3>
                 <div className="grid md:grid-cols-2 gap-8 text-gray-300">
                   <div>
@@ -203,7 +190,7 @@ export default function TopicAnalysisPage() {
             {results ? (
               <>
                 <ProbabilityPieChart probability={results.probability} title="Topic Probabilities" colors={topicColors} />
-                <div className="bg-blue-900/20 border-2 border-blue-500/50 rounded-2xl p-6">
+                <div className="bg-blue-900/20 border border-white/15 rounded-2xl p-6">
                   <p className="text-white text-sm font-semibold mb-2">Predicted Topic</p>
                   <p className="text-blue-400 text-2xl font-bold capitalize">
                     {results.topic}
@@ -211,22 +198,25 @@ export default function TopicAnalysisPage() {
                 </div>
               </>
             ) : loading ? (
-              <div className="bg-blue-900/20 border-2 border-blue-500/50 rounded-2xl p-6 flex items-center justify-center h-64">
+              <div className="bg-blue-900/20 border border-white/15 rounded-2xl p-6 flex items-center justify-center h-64">
                 <div className="text-center">
                   <div className="inline-block w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"></div>
                   <p className="text-blue-300">Analyzing text...</p>
                 </div>
               </div>
             ) : (
-              <div className="bg-white/5 border border-white/20 rounded-2xl p-6 h-64 flex items-center justify-center">
-                <p className="text-gray-400 text-center">
-                  Enter text and click the Analyze Topics button to see results
-                </p>
+              <div className="bg-white/5 border border-dashed border-white/15 rounded-2xl p-6 h-64 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-2xl mb-2 text-white/40">💬</p>
+                  <p className="text-gray-400 text-sm">
+                    Enter text and analyze to see topic probabilities
+                  </p>
+                </div>
               </div>
             )}
 
             {/* Info Box */}
-            <div className="bg-white/5 border border-white/20 rounded-lg p-4">
+            <div className="bg-white/5 border border-white/15 rounded-xl p-4">
               <h4 className="text-white font-semibold mb-3 text-sm">Quick Tips</h4>
               <ul className="text-gray-300 text-xs space-y-2">
                 <li>• Longer text tends to produce better results</li>

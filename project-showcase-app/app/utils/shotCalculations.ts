@@ -26,6 +26,11 @@ export interface ShotData {
 
   // Team advantage
   shootingTeamPlayerDiff: number;
+
+  // New features
+  shooterLeftRight: string;            // 'L' or 'R'
+  playerPositionThatDidEvent: string;  // 'L', 'R', 'D', or 'C'
+  shooterTimeOnIceSinceFaceoff: number; // seconds, non-negative
 }
 
 /**
@@ -112,6 +117,9 @@ export function buildShotPayload(data: ShotData): Record<string, unknown> {
     lastEventCategory: data.lastEventCategory,
     offWing: data.offWing,
     shootingTeamPlayerDiff: data.shootingTeamPlayerDiff,
+    shooterLeftRight: data.shooterLeftRight,
+    playerPositionThatDidEvent: data.playerPositionThatDidEvent,
+    shooterTimeOnIceSinceFaceoff: data.shooterTimeOnIceSinceFaceoff,
   };
 }
 
@@ -134,6 +142,13 @@ export function validateShotData(data: Partial<ShotData>): { valid: boolean; err
   if (data.offWing === undefined) errors.push('Off-wing status is required');
   if (data.shootingTeamPlayerDiff === undefined)
     errors.push('Team player differential is required');
+  if (data.shooterLeftRight === undefined || !['L', 'R'].includes(data.shooterLeftRight))
+    errors.push('Shooter handedness must be L or R');
+  if (data.playerPositionThatDidEvent === undefined ||
+      !['L', 'R', 'D', 'C'].includes(data.playerPositionThatDidEvent))
+    errors.push('Player position must be L, R, D, or C');
+  if (data.shooterTimeOnIceSinceFaceoff === undefined || data.shooterTimeOnIceSinceFaceoff < 0)
+    errors.push('Shooter time on ice since faceoff must be a non-negative number');
 
   return {
     valid: errors.length === 0,
