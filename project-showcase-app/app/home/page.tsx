@@ -19,7 +19,7 @@ export default function HomePage() {
         backgroundAttachment: 'fixed',
       }}
     >
-      <Navigation />
+      <Navigation activePage="home" />
 
       <main className="w-full px-6 py-20 flex flex-col gap-16 flex-1">
         <HeroSection />
