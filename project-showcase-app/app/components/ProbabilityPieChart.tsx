@@ -22,10 +22,11 @@ export default function ProbabilityPieChart({ probability, title = 'Shot Outcome
 
   // Define colors for each outcome type
   const outcomeColors: Record<string, string> = {
-    goal: '#22c55e', // Green
-    'controlled rebound': '#3b82f6', // Blue
-    'dangerous rebound': '#ef4444', // Red
-    'play stopped': '#8b5cf6', // Purple
+    'goal': '#22c55e',                      // green
+    'play stopped': '#8b5cf6',              // purple
+    'play continued in zone': '#3b82f6',    // blue
+    'play continued outside zone': '#f59e0b', // amber
+    'generated rebound': '#ef4444',         // red
   };
 
   const getColor = (originalName: string): string => {
