@@ -209,7 +209,7 @@ export default function ShotPredictionPage() {
         </div>
 
         <div className="flex justify-center w-full">
-          <div className="grid lg:grid-cols-3 gap-8 w-full lg:max-w-fit">
+          <div className="grid lg:grid-cols-3 gap-8 w-full">
             {/* Map Area */}
             <div className="lg:col-span-2 space-y-8">
             <div className="bg-linear-to-b from-white/10 to-white/5 border border-white/15 rounded-2xl p-8">
@@ -385,13 +385,13 @@ export default function ShotPredictionPage() {
                 <div>
                   <h4 className="text-green-400 font-semibold mb-2">Model Details</h4>
                   <p>
-                    This model is an LightGBM classifier trained on historical NHL shot data to predict the outcome of a single shot given all available context. The data was acquired from <a href="https://www.moneypuck.com">moneypuck.com</a>, and cleaned to include only shots on goal. The model does not have the highest accuracy compared to more complex models, but provides more realistic probabilities by penalizing majority class misclassifications.
+                    This model is a CatBoost classifier trained on historical NHL shot data from <a href="https://www.moneypuck.com" className="text-green-400 hover:underline">moneypuck.com</a> to predict one of five outcomes for a given shot: goal, play stopped, play continued in zone, play continued outside zone, or generated rebound. The model uses 23 features including shot location, shooter handedness, player position, and time on ice.
                   </p>
                 </div>
                 <div>
                   <h4 className="text-green-400 font-semibold mb-2">How to Use</h4>
                   <p>
-                    The red pin represents the location of event that occured directly prior to the shot, and the blue pin represents the shot location. The controlled rebound outcome describes a rebound that the attacking team cannot reach, dangerous rebound describes a rebound that the attacking team has a good chance of reaching, and play stopped describes a shot that was either deflected out of play or covered by the goalie.
+                    Drag the red pin (E) to the location of the event directly before the shot, and the blue pin (S) to where the shot was taken. Fill in the shot parameters on the right, then click Predict Shot. Shot angle, distance, and speed are calculated automatically from the pin positions.
                   </p>
                 </div>
               </div>
@@ -522,7 +522,7 @@ export default function ShotPredictionPage() {
 
                 {/* Position of Event Player */}
                 <div className="space-y-2">
-                  <label className="text-gray-300 text-sm font-semibold">Position of Event Player</label>
+                  <label className="text-gray-300 text-sm font-semibold">Position of Shooting Player</label>
                   <select
                     value={formData.playerPositionThatDidEvent}
                     onChange={(e) => handleFormChange('playerPositionThatDidEvent', e.target.value)}
