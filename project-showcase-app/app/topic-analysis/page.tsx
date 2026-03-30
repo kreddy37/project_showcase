@@ -88,7 +88,7 @@ export default function TopicAnalysisPage() {
         </div>
 
         <div className="flex justify-center w-full">
-          <div className="grid lg:grid-cols-3 gap-8 w-full lg:max-w-fit">
+          <div className="grid lg:grid-cols-3 gap-8 w-full">
             {/* Input Area */}
             <div className="lg:col-span-2 space-y-8">
               <div className="bg-linear-to-b from-white/10 to-white/5 border border-white/15 rounded-2xl p-8">
