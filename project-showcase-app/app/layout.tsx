@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Canucks ML Models",
-  description: "Vancouver Canucks Machine Learning Model Showcase - Shot Prediction & Topic Analysis",
+  title: "Hockey ML Models",
+  description: "Hockey Machine Learning Model Showcase - Shot Prediction & Topic Analysis",
 };
 
 export default function RootLayout({
