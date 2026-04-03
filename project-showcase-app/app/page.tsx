@@ -8,7 +8,7 @@ export default function SplashScreen() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{
-      backgroundImage: 'url("/assets/canucks-logo.webp")',
+      backgroundImage: 'url("/assets/seattle-kraken-desktop-2025-2026-2000px-thumb.webp")',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed'
