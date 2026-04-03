@@ -399,8 +399,9 @@ export default function ShotPredictionPage() {
             {/* How it was created */}
             <div className="bg-white/5 border border-white/20 rounded-2xl p-8">
               <h3 className="text-xl font-bold mb-3" style={{ color: '#4ade80' }}>How it was created</h3>
-              <p className="text-gray-300 leading-relaxed"/>
+              <p className="text-gray-300 leading-relaxed">
                 Data was extracted from moneypuck.com, using their shooting dataset, containing all shot attempts from both the 23-24, and 24-25 seasons. The data was analyzed in a colab notebook, checking for class imbalance, null observations, and other cleaning necessary to createe the model.  This was done using data visualization tools such as seaborn and matplotlib. Several models were trained on the data, to make a decision regarding the optimal model for classification. Optuna was used for hyperparameter tuning, and the final model had a final log loss of 1.3, with a 0.71 brier score. Both were significantly above the naive baseline, but were not perfect, instead reflective of the stochastic nature of post-shot outcomes.
+              </p>
             </div>
 
             {/* What I learned */}
