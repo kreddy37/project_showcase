@@ -17,6 +17,7 @@ jobs:
         run: |
           docker image prune -f
           docker buildx prune -f
+          sudo sh -c 'rm -rf /var/lib/containerd/io.containerd.content.v1.content/blobs/sha256/*'
 
       - name: Build Docker images
         env:
