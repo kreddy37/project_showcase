@@ -181,6 +181,22 @@ export default function TopicAnalysisPage() {
                   </div>
                 </div>
               </div>
+
+              {/* How it was created */}
+              <div className="bg-white/5 border border-white/20 rounded-2xl p-8">
+                <h3 className="text-xl font-bold mb-3" style={{ color: '#4ade80' }}>How it was created</h3>
+                <p className="text-gray-300 leading-relaxed">
+                  This project was constructed with data collected using an academic torrent through BitTorrent, through which I procured roughly 100,000 posts from the r/nhl subreddit, using post titles for topic analysis. In a colab notebook, I used lemmatization, spelling correction, and stop word removal. Certain words were also removed from posts for purposes of data clarity, and LDA was performed on the data to determine appropriate categories. After this, a torch neural network was fitted to the data.
+                </p>
+              </div>
+
+              {/* What I learned */}
+              <div className="bg-white/5 border border-white/20 rounded-2xl p-8">
+                <h3 className="text-xl font-bold mb-3" style={{ color: '#93c5fd' }}>What I learned</h3>
+                <p className="text-gray-300 leading-relaxed">
+                  This project was my first experience using the torch library in python. I learned just how much more complex and powerful a neural network can be when more than just its topography. I learned to find a suitable optimizer, loss function, and designed a full training loop essentially from scratch using torch. While the work was incredibly rewarding, I learned a great deal about selecting the right data, and the complexities of preprocessing messy data for the purposes of NLP, especially the practice of spell check and lemmatization. However, the result was a fun application of a new technique to data that pertains to my love of hockey. 
+                </p>
+              </div>
             </div>
 
           {/* Results Panel */}
