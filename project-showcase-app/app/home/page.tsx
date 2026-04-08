@@ -5,7 +5,6 @@ import Footer from '@/app/components/shared/Footer';
 import HeroSection from '@/app/components/home/HeroSection';
 import ModelsSection from '@/app/components/home/ModelsSection';
 import AboutProjectsSection from '@/app/components/home/AboutProjectsSection';
-import StatsSection from '@/app/components/home/StatsSection';
 import { backgroundImage } from '@/app/components/constants/gradients';
 
 export default function HomePage() {
@@ -25,7 +24,6 @@ export default function HomePage() {
         <HeroSection />
         <ModelsSection />
         <AboutProjectsSection />
-        <StatsSection />
       </main>
 
       <Footer />

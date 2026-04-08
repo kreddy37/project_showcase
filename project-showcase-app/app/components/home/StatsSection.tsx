@@ -22,7 +22,7 @@ export default function StatsSection() {
             key={index}
             className="backdrop-blur-md rounded-xl p-8 text-center border"
             style={{
-              backgroundColor: colors.white_5,
+              backgroundColor: colors.darkCard,
               borderColor: colors.green500_30,
             }}
           >

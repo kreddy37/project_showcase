@@ -13,7 +13,7 @@ export default function ModelsSection() {
       <div
         className="backdrop-blur-md rounded-2xl p-12 text-white max-w-5xl w-full border flex flex-col items-center card-hover"
         style={{
-          backgroundColor: colors.white_5,
+          backgroundColor: colors.darkCard,
           borderColor: colors.green500_30,
         }}
       >

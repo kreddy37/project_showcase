@@ -200,7 +200,7 @@ export default function ShotPredictionPage() {
       <Navigation activePage="shot-prediction" />
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-16">
+      <main className="max-w-5xl px-6 py-16" style={{ margin: '0 auto' }}>
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-white mb-4">🎯 Shot Prediction</h1>
           <p className="text-xl text-gray-300">
@@ -245,24 +245,58 @@ export default function ShotPredictionPage() {
                 className="relative w-full aspect-[200/85] bg-white rounded-lg border-4 border-dashed border-white/30 cursor-crosshair hover:border-white/50 transition-colors overflow-hidden"
               >
                 {/* Rink markings */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.8 }}>
-                  {/* Center line at x = 0 (50% in pixel space) - solid red 5px */}
-                  <line x1="50%" y1="0" x2="50%" y2="100%" stroke="red" strokeWidth="5" />
-                  {/* Goal line at x = -100 (0% in pixel space) */}
-                  <line x1="0%" y1="0" x2="0%" y2="100%" stroke="red" strokeWidth="2" />
-                  {/* Goal line at x = 100 (100% in pixel space) - red line */}
-                  <line x1="100%" y1="0" x2="100%" y2="100%" stroke="red" strokeWidth="2" />
-                  {/* Blue line at x = -25 (37.5% in pixel space) - 25 ft from center toward goal */}
-                  <line x1="37.5%" y1="0" x2="37.5%" y2="100%" stroke="blue" strokeWidth="2" />
-                  {/* Blue line at x = 25 (62.5% in pixel space) - 25 ft from center toward opponent goal */}
-                  <line x1="62.5%" y1="0" x2="62.5%" y2="100%" stroke="blue" strokeWidth="2" />
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 200 85" preserveAspectRatio="none" style={{ opacity: 0.75 }}>
+                  {/* Goal lines at x=±89ft */}
+                  <line x1="11" y1="0" x2="11" y2="85" stroke="#e8002d" strokeWidth="1.5" />
+                  <line x1="189" y1="0" x2="189" y2="85" stroke="#e8002d" strokeWidth="1.5" />
+                  {/* Blue lines at x=±25ft */}
+                  <line x1="75" y1="0" x2="75" y2="85" stroke="#0066cc" strokeWidth="3" />
+                  <line x1="125" y1="0" x2="125" y2="85" stroke="#0066cc" strokeWidth="3" />
+                  {/* Center red line */}
+                  <line x1="100" y1="0" x2="100" y2="85" stroke="#e8002d" strokeWidth="3" />
+                  {/* Center ice circle and dot */}
+                  <circle cx="100" cy="42.5" r="15" fill="none" stroke="#0066cc" strokeWidth="1" />
+                  <circle cx="100" cy="42.5" r="1.5" fill="#e8002d" />
+                  {/* Left zone faceoff circles at x=−69, y=±22 */}
+                  <circle cx="31" cy="20.5" r="15" fill="none" stroke="#e8002d" strokeWidth="1" />
+                  <circle cx="31" cy="20.5" r="1.5" fill="#e8002d" />
+                  <circle cx="31" cy="64.5" r="15" fill="none" stroke="#e8002d" strokeWidth="1" />
+                  <circle cx="31" cy="64.5" r="1.5" fill="#e8002d" />
+                  {/* Right zone faceoff circles at x=69, y=±22 */}
+                  <circle cx="169" cy="20.5" r="15" fill="none" stroke="#e8002d" strokeWidth="1" />
+                  <circle cx="169" cy="20.5" r="1.5" fill="#e8002d" />
+                  <circle cx="169" cy="64.5" r="15" fill="none" stroke="#e8002d" strokeWidth="1" />
+                  <circle cx="169" cy="64.5" r="1.5" fill="#e8002d" />
+                  {/* Neutral zone faceoff dots at x=±20, y=±22 */}
+                  <circle cx="80" cy="20.5" r="1.5" fill="#e8002d" />
+                  <circle cx="80" cy="64.5" r="1.5" fill="#e8002d" />
+                  <circle cx="120" cy="20.5" r="1.5" fill="#e8002d" />
+                  <circle cx="120" cy="64.5" r="1.5" fill="#e8002d" />
                 </svg>
 
-                {/* Goal marker at (100, 0) - Blue semicircle */}
+                {/* Goal crease - left goal line */}
                 <svg
                   className="absolute pointer-events-none"
                   style={{
-                    left: '100%',
+                    left: '5.5%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '40px',
+                    height: '40px',
+                  }}
+                  viewBox="0 0 40 40"
+                >
+                  <path
+                    d="M 20 0 A 20 20 0 0 1 20 40 Z"
+                    fill="#4a90e2"
+                    opacity="0.8"
+                  />
+                </svg>
+                {/* Goal crease - right goal line */}
+                <svg
+                  className="absolute pointer-events-none"
+                  style={{
+                    left: '94.5%',
                     top: '50%',
                     transform: 'translate(-50%, -50%)',
                     width: '40px',

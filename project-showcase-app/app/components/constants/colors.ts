@@ -35,4 +35,5 @@ export const colors = {
   blue500_20: 'rgba(59, 130, 246, 0.2)',
   blue500_30: 'rgba(59, 130, 246, 0.3)',
   white_5: 'rgba(255, 255, 255, 0.05)',
+  darkCard: 'rgba(0, 10, 30, 0.72)',
 };

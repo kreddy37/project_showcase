@@ -79,7 +79,7 @@ export default function TopicAnalysisPage() {
       <Navigation activePage="topic-analysis" />
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-16">
+      <main className="max-w-5xl px-6 py-16" style={{ margin: '0 auto' }}>
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-white mb-4">💬 Topic Analysis</h1>
           <p className="text-xl text-gray-300">

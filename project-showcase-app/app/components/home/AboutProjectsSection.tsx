@@ -44,7 +44,7 @@ export default function AboutProjectsSection() {
       <section
         className="backdrop-blur-md rounded-2xl p-12 text-white max-w-5xl w-full border card-hover"
         style={{
-          backgroundColor: colors.white_5,
+          backgroundColor: colors.darkCard,
           borderColor: colors.green500_30,
         }}
       >
